@@ -19,4 +19,6 @@ use App\Http\Controllers\UserController;
 //     return $request->user();
 // });
 
-Route::get("Users", [UserController::class, 'getAll'])->name("Users");
+Route::post("users", [UserController::class, 'store'])->name('signup');
+Route::post("users/signin", [UserController::class, 'store'])->name('signin');
+

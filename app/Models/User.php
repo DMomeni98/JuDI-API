@@ -6,12 +6,20 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\DB;
+
+// use Illuminate\Support\Facades\DB;
 
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    // public function __construct(array $input){
+    //     $this->fillable['email'] = $input['email'];
+    //     $this->fillable['password'] = bcrypt($input['password']);
+    //     $this->fillable['user_name'] = !is_null($input['user_name']) ?
+    //         $input['user_name'] : $this->token_generator(); 
+    // }
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +27,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'fullname',
+        'user_name',
         'email',
         'password',
     ];
@@ -32,6 +40,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'id'
     ];
 
     /**
@@ -43,8 +52,4 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public static function getAll()
-    {
-        return DB::select("select * from `users`;");
-    }
 }
