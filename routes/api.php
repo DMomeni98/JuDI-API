@@ -20,5 +20,11 @@ use App\Http\Controllers\UserController;
 // });
 
 Route::post("users", [UserController::class, 'store'])->name('signup');
-Route::post("users/signin", [UserController::class, 'store'])->name('signin');
+//Route::post("users/signin", [UserController::class, 'store'])->name('signin');
+
+    Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
+    Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
+    Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('api');
+    Route::post("users/me", [UserController::class, 'me'])->middleware('api');
+
 
