@@ -4,12 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 // use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
+    private static $store_validation_rules = [
+        'email' => ['required', 'email', 'unique:users'],
+        'user_name' => ['max:20', 'alpha_dash', 'nullable', 'unique:users'],
+        'password' => ['required', 'min:8']];
 
-   /**
+    private static $signin_validation_rules = [
+        'email' => ['required', 'email'],
+        'password' => 'required'
+    ];
+   
+    /**
      * Create a new AuthController instance.
      *
      * @return void
@@ -19,14 +29,9 @@ class UserController extends Controller
         $this->middleware('auth:api', ['except' => ['store','signin']]);
     }
    
-   
     public function store(Request $request){
-        $valid_data = $request->validate([
-            'email' => ['required', 'email', 'unique:users'],
-            'user_name' => ['max:20', 'alpha_dash', 'nullable', 'unique:users'],
-            'password' => ['required', 'min:8']
-    ]);
-
+        $valid_data = $request->validate( self::$store_validation_rules);
+        
         $user_name = !is_null($valid_data['user_name'])?
             $valid_data['user_name']: self::token_generator();
         $email = $valid_data['email'];
@@ -37,38 +42,32 @@ class UserController extends Controller
             'email' => $email,
             'password' => $password
         ]);
-
-        $signin = [
-            'href' => parent::$base_route . 'users/sigin',
-            'method' => 'POST',
-            'params' => ['email', 'password']
-        ];
-
-
+       
         $response_code = 0;
         if($user->save()){
-            $user->signin = $signin;
+            $user->signin = [
+                'href' => parent::$base_route . 'users/sigin',
+                'method' => 'POST',
+                'params' => ['email', 'password']
+            ];;
             $response = [
                 'msg' => 'User Created',
                 'user' => $user
             ];
             $response_code = 201;
         } else {
-            $response = [
-                'msg' => 'an error occured while creating user'
-            ];
+            $response = ['msg' => 'an error occured while creating user'];
             $response_code = 404;
         }
-        return \response()->json($response, $response_code);
+        return response()->json($response, $response_code);
     }
 
 
     public function signin(Request $request){
-        $valid_data = $request->validate([
-                'email' => ['required', 'email'],
-                'password' => 'required'
-        ]);
-
+        $valid_data = $request->validate(self::$signin_validation_rules);
+        if(!is_null($this->me())){
+            return response()->json(['msg' => 'already signed in'], 401);
+        }
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
@@ -88,6 +87,31 @@ class UserController extends Controller
         return response()->json(auth()->user());
     }
 
+
+    public function index(Request $request, $user_name){
+        $response = [];
+        $response_code = 0;
+        Validator::make(['user_name' => $user_name], [
+            'user_name' => 'required|exists:users',
+        ])->validate();
+        if ($this->match_request_with_user($user_name)){
+            $response = [
+            'msg' => "operation successful", 
+            'user' => $this->me()
+            ];
+            $response_code = 200;
+        }
+        else{
+            $response = [
+            'msg' => "users didn't match",
+            'user' => null
+            ];
+            $response_code = 401;
+        }
+        return response()->json($response, $response_code);   
+    }
+
+
     /**
      * Log the user out (Invalidate the token).
      *
@@ -96,8 +120,7 @@ class UserController extends Controller
     public function signout()
     {
         auth()->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['msg' => 'Successfully logged out'], 200);
     }
 
     /**
@@ -109,6 +132,17 @@ class UserController extends Controller
     {
         return $this->respondWithToken(auth()->refresh());
     }
+
+    public function match_request_with_user($user_name){
+        $result = false;
+        $user = User::where('user_name', $user_name)->first();
+        if ($this->me()->original == $user){
+            $result = true;
+        }
+        return $result;
+    }
+
+    // public function 
 
     /**
      * Get the token array structure.
@@ -123,7 +157,7 @@ class UserController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
+        ], 200);
     }
 
     public static function token_generator($len = 7){

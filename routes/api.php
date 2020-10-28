@@ -19,12 +19,12 @@ use App\Http\Controllers\UserController;
 //     return $request->user();
 // });
 
-Route::post("users", [UserController::class, 'store'])->name('signup');
-//Route::post("users/signin", [UserController::class, 'store'])->name('signin');
-
-    Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
-    Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
-    Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('api');
-    Route::post("users/me", [UserController::class, 'me'])->middleware('api');
+Route::post("users", [UserController::class, 'store']);
+Route::patch("users/{user_name}", [UserController::class, 'update_profile'])->middleware('api');
+Route::get("users/{user_name}", [UserController::class, 'index'])->middleware('api');
+Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
+Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
+Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('api');
+Route::post("users/me", [UserController::class, 'me'])->middleware('api');
 
 
