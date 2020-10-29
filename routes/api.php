@@ -20,7 +20,7 @@ use App\Http\Controllers\UserController;
 // });
 
 Route::post("users", [UserController::class, 'store']);
-Route::patch("users/{user_name}", [UserController::class, 'update_profile'])->middleware('api');
+Route::put("users/{user_name}", [UserController::class, 'update_profile'])->middleware('api');
 Route::get("users/{user_name}", [UserController::class, 'index'])->middleware('api');
 Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
 Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');

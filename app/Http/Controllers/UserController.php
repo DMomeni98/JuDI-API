@@ -11,8 +11,8 @@ class UserController extends Controller
 {
     private static $store_validation_rules = [
         'email' => ['required', 'email', 'unique:users'],
-        'user_name' => ['max:20', 'alpha_dash', 'nullable', 'unique:users'],
-        'password' => ['required', 'min:8']];
+        'user_name' => ['min:3', 'max:20', 'alpha_dash', 'nullable', 'unique:users'],
+        'password' => ['required', 'min:8', 'confirmed']];
 
     private static $signin_validation_rules = [
         'email' => ['required', 'email'],
@@ -65,9 +65,6 @@ class UserController extends Controller
 
     public function signin(Request $request){
         $valid_data = $request->validate(self::$signin_validation_rules);
-        if(!is_null($this->me())){
-            return response()->json(['msg' => 'already signed in'], 401);
-        }
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
@@ -142,7 +139,37 @@ class UserController extends Controller
         return $result;
     }
 
-    // public function 
+    public function update_profile(Request $request){
+        $response = [];
+        $response_code = 0;
+        
+        Validator::make(['user_name' => $user_name], [
+            'user_name' => 'required|exists:users',
+        ])->validate();
+
+        if ($this->match_request_with_user($user_name)){
+            $request->validate(['new_user_name' => ['min:3', 'max:20', 'alpha_dash', 'unique:users'],
+                'full_name' => ['nullable', 'max:70', 'alpha'],
+                'new_password' =>  ['min:8', 'nullable'],
+                'password_confirmation' => 'same:new_password'
+            ]);
+            $full_name = $request->input('full_name');
+            $new_user_name = $request->input('new_user_name');
+            $new_password = bcrypt($request->input('new_password'));
+            $user = $this->me()->original;
+            $user->full_name = $full_name;
+            $user->password = $new_password;
+            $user->save();
+        }
+        else{
+            $response = [
+            'msg' => "users didn't match",
+            'user' => null
+            ];
+            $response_code = 401;
+        }
+        return response()->json($response, $response_code);
+    }
 
     /**
      * Get the token array structure.
