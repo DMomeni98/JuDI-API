@@ -143,8 +143,68 @@ class UserTest extends TestCase
 
 
     //test sign in
-    public function signinTest()
+    public function testSignIn()
     {
-        $responce = $this->get('api/users');
+        $response = $this->withHeaders([
+            'Content-Type' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest'
+        ])->json('POST', '/api/users/signin',
+            ['password' => '12345678',
+             'email' => 'homa@test.com'
+            ]);
+             
+
+        $response
+            ->assertStatus(200);
+    }
+
+
+    //sign in with wrong email and password
+    public function testInvalidSignIn()
+    {
+        $response = $this->withHeaders([
+            'Content-Type' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest'
+        ])->json('POST', '/api/users/signin',
+            ['password' => '12345678',
+             'email' => 'homad@test.com'
+            ]);
+             
+
+        $response
+            ->assertStatus(401);
+    }
+
+
+    //sign in with null email
+    public function testSignInNullEmail()
+    {
+        $response = $this->withHeaders([
+            'Content-Type' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest'
+        ])->json('POST', '/api/users/signin',
+            ['password' => '12345678',
+             'email' => ''
+            ]);
+             
+
+        $response
+            ->assertStatus(422);
+    }
+
+    //sign in with null password
+    public function testSignInNullPassword()
+    {
+        $response = $this->withHeaders([
+            'Content-Type' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest'
+        ])->json('POST', '/api/users/signin',
+            ['password' => '',
+             'email' => 'homa@test.com'
+            ]);
+             
+
+        $response
+            ->assertStatus(422);
     }
 }
