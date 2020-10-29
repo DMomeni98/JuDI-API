@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     private static $store_validation_rules = [
         'email' => ['required', 'email', 'unique:users'],
-        'user_name' => ['min:3', 'max:20', 'alpha_dash', 'nullable', 'unique:users'],
+        'user_name' => ['min:3', 'max:20', 'alpha_dash', 'unique:users'],
         'password' => ['required', 'min:8', 'confirmed']];
 
     private static $signin_validation_rules = [
@@ -32,7 +32,7 @@ class UserController extends Controller
     public function store(Request $request){
         $valid_data = $request->validate( self::$store_validation_rules);
         
-        $user_name = !is_null($valid_data['user_name'])?
+        $user_name = $request->has("user_name") && !is_null($valid_data['user_name'])?
             $valid_data['user_name']: self::token_generator();
         $email = $valid_data['email'];
         $password = bcrypt($valid_data['password']);
@@ -114,10 +114,10 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function signout()
+    public function signout($msg = "Successfully logged out")
     {
         auth()->logout();
-        return response()->json(['msg' => 'Successfully logged out'], 200);
+        return response()->json(['msg' => $msg], 200);
     }
 
     /**
@@ -139,7 +139,7 @@ class UserController extends Controller
         return $result;
     }
 
-    public function update_profile(Request $request){
+    public function update_profile(Request $request, $user_name){
         $response = [];
         $response_code = 0;
         
@@ -148,18 +148,24 @@ class UserController extends Controller
         ])->validate();
 
         if ($this->match_request_with_user($user_name)){
-            $request->validate(['new_user_name' => ['min:3', 'max:20', 'alpha_dash', 'unique:users'],
-                'full_name' => ['nullable', 'max:70', 'alpha'],
-                'new_password' =>  ['min:8', 'nullable'],
-                'password_confirmation' => 'same:new_password'
+            $request->validate(['user_name' => ['min:3', 'max:20', 'alpha_dash', 'required'],
+                'full_name' => ['nullable', 'max:70', 'regex:/^[\pL\s\-]+$/u', 'required']
             ]);
             $full_name = $request->input('full_name');
-            $new_user_name = $request->input('new_user_name');
-            $new_password = bcrypt($request->input('new_password'));
-            $user = $this->me()->original;
-            $user->full_name = $full_name;
-            $user->password = $new_password;
-            $user->save();
+            $new_user_name = $request->input('user_name');
+            $user_exists = User::where("user_name", $new_user_name)->first();
+            $curr_user = User::where("user_name", $user_name)->first();
+            if(is_null($user_exists)){
+                $curr_user->user_name = $new_user_name;
+            } elseif(!is_null($user_exists) && $user_exists->user_name != $user_name){
+                $response['error'] = 'sorry, this username is taken.';
+            }
+            $curr_user->full_name = $full_name;
+            $curr_user->save();
+
+            $response['msg'] = 'user updated';
+            $response['user'] = $curr_user;
+            $response_code = 200;
         }
         else{
             $response = [
@@ -171,6 +177,27 @@ class UserController extends Controller
         return response()->json($response, $response_code);
     }
 
+
+    public function change_password(Request $request, $user_name)
+    {
+        if($this->match_request_with_user($user_name)){
+            $validated = $request->validate(
+                ['password' => ['required', 'min:8', 'string', 'confirmed']
+                ]);
+            $user = User::where('user_name', $user_name)->first();
+            $user->password = bcrypt($validated['password']);
+            $user->save();
+            return $this->signout("password changed successfuly, please sign in again");
+        }
+        else{
+            $response = [
+            'msg' => "users didn't match",
+            ];
+            $response_code = 404;
+            return response()->json($response, $response_code);
+        }
+    }
+    
     /**
      * Get the token array structure.
      *

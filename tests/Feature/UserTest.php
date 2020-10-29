@@ -9,25 +9,28 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class UserTest extends TestCase
 {
-
     use DatabaseTransactions;
     /**
      * A basic feature test example.
      *  user sign up works well!
      * @return void
      */
+
+    private static $headers =  [
+        'Content-Type' => 'application/json',
+        'X-Requested-With' => 'XMLHttpRequest'
+    ];
+
     public function testStore()
     {
-        $response = $this->withHeaders([
-            'Content-Type' => 'application/json',
-            'X-Requested-With' => 'XMLHttpRequest'
-        ])->json('POST', '/api/users',
+        $response = $this->withHeaders(self::$headers)->
+        json('POST', '/api/users',
             ['user_name' => 'homalsdkdjhkjndg',
              'password' => '12345678',
+             'password_confirmation' => '12345678',
              'email' => 'test48kdsdff@test.com'
             ]);
              
-
         $response
             ->assertStatus(201)
             ->assertJson([
