@@ -178,6 +178,24 @@ class UserController extends Controller
     }
 
 
+    public function upload_avatar(Request $request ,$user_name){
+        if(!$this->match_request_with_user($user_name)){
+            return response()->json(["msg" => "not"], 404);
+        }
+        
+    if(!$request->hasFile('photo')) {
+        return response()->json([$request->all()], 400);
+    }
+    $file = $request->file('photo');
+    if(!$file->isValid()) {
+        return response()->json(['invalid_file_upload'], 400);
+    }
+    $path = public_path() . '/uploads/images/avatars/';
+    $file->move($path, $file->getClientOriginalName());
+    return response()->json(compact('path'));
+}
+
+
     public function change_password(Request $request, $user_name)
     {
         if($this->match_request_with_user($user_name)){
@@ -225,4 +243,7 @@ class UserController extends Controller
         }
         return $token;
     }
+
+
+
 }
