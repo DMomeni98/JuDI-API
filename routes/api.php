@@ -20,3 +20,6 @@ use App\Http\Controllers\UserController;
 // });
 
 Route::get("Users", [UserController::class, 'getAll'])->name("Users");
+
+//cards
+Route::post("cards", [CardController::class, 'store']);
