@@ -19,7 +19,16 @@ use App\Http\Controllers\UserController;
 //     return $request->user();
 // });
 
-Route::get("Users", [UserController::class, 'getAll'])->name("Users");
+
+//users
+  Route::post("users", [UserController::class, 'store']);
+Route::put("users/{user_name}", [UserController::class, 'update_profile'])->middleware('api');
+Route::put("users/{user_name}/change_password", [UserController::class, 'change_password'])->middleware('api');
+Route::post("users/{user_name}/upload_avatar", [UserController::class, 'upload_avatar'])->middleware('api');
+Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
+Route::get("users/{user_name}", [UserController::class, 'index'])->middleware('api');
+Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
+Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('api');
 
 //cards
 Route::post("cards", [CardController::class, 'store']);

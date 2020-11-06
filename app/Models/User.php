@@ -2,16 +2,25 @@
 
 namespace App\Models;
 
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\DB;
+
+// use Illuminate\Support\Facades\DB;
 
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
+
+    // public function __construct(array $input){
+    //     $this->fillable['email'] = $input['email'];
+    //     $this->fillable['password'] = bcrypt($input['password']);
+    //     $this->fillable['user_name'] = !is_null($input['user_name']) ?
+    //         $input['user_name'] : $this->token_generator(); 
+    // }
 
     /**
      * The attributes that are mass assignable.
@@ -19,9 +28,12 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'fullname',
+        'user_name',
+        'full_name',
         'email',
         'password',
+        'avatar',
+        'xp'
     ];
 
     /**
@@ -32,6 +44,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'id',
+        'updated_at',
+        'created_at',
     ];
 
     /**
@@ -43,8 +58,24 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public static function getAll()
+     /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
     {
-        return DB::select("select * from `users`;");
+        return $this->getKey();
     }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
 }
