@@ -31,4 +31,4 @@ Route::post("users/signin", [UserController::class, 'signin'])->middleware('api'
 Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('api');
 
 //cards
-Route::post("cards", [CardController::class, 'store']);
+Route::post("users/{user_name}/cards", [CardController::class, 'store'])->middleware('api');

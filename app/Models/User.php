@@ -2,25 +2,17 @@
 
 namespace App\Models;
 
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use App\Models\Card;
 
-// use Illuminate\Support\Facades\DB;
 
-
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-
-    // public function __construct(array $input){
-    //     $this->fillable['email'] = $input['email'];
-    //     $this->fillable['password'] = bcrypt($input['password']);
-    //     $this->fillable['user_name'] = !is_null($input['user_name']) ?
-    //         $input['user_name'] : $this->token_generator(); 
-    // }
 
     /**
      * The attributes that are mass assignable.
@@ -28,12 +20,9 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'user_name',
-        'full_name',
+        'fullname',
         'email',
         'password',
-        'avatar',
-        'xp'
     ];
 
     /**
@@ -44,9 +33,6 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
-        'id',
-        'updated_at',
-        'created_at',
     ];
 
     /**
@@ -58,24 +44,12 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
     ];
 
-     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier()
+    public static function getAll()
     {
-        return $this->getKey();
+        return DB::select("select * from `users`;");
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
+    public function cards(){
+        return $this->belongsToMany('App\Models\Card');
     }
-
 }

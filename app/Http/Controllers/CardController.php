@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Card;
+use App\Models\User;
 
 class CardController extends Controller
 {
+
+    private static $store_validation_rules = [
+        'title' => ['required'],
+        'description' => ['required', 'nullable'],
+        'due' => ['required', 'nullable'],
+        'with_star' => ['required', 'nullable', 'boolean'],
+        'category_id' =>['required', 'integer']
+    ];
+
     /**
      * Display a listing of the resource.
      *
@@ -33,10 +43,51 @@ class CardController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $user_name)
     {
+        $valid_data = $request->validate(self::$store_validation_rules);
         
+        if(!match_request_with_user($user_name)){
+            $response = [
+                'msg' => "users didn't match",
+                'user' => null
+            ];
+            $response_code = 401;
+            return response()->json($response, $response_code);
+        }
+        
+        $card = new Card([
+            'title' => $valid_data['title'],
+            'description' => $valid_data['description'],
+            'due' => $valid_data['due'],
+            'with_star' => $valid_data['with_star'],
+            'category_id' => $valid_data['category_id'],
+            
+        ]);
+
     }
+
+    
+      /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function me()
+    {
+        return response()->json(auth()->user());
+    }
+    
+    
+    public function match_request_with_user($user_name){
+        $result = false;
+        $user = User::where('user_name', $user_name)->first();
+        if ($this->me()->original == $user){
+            $result = true;
+        }
+        return $result;
+    }
+
 
     /**
      * Display the specified resource.
