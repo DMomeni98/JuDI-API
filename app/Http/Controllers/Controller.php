@@ -10,4 +10,6 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    
+    protected static $base_route = "http://localhost:8000/api/";
 }
