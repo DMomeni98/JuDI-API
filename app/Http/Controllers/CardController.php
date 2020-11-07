@@ -47,7 +47,7 @@ class CardController extends Controller
     {
         $valid_data = $request->validate(self::$store_validation_rules);
         
-        if(!match_request_with_user($user_name)){
+        if(!$this->match_request_with_user($user_name)){
             $response = [
                 'msg' => "users didn't match",
                 'user' => null
@@ -62,8 +62,21 @@ class CardController extends Controller
             'due' => $valid_data['due'],
             'with_star' => $valid_data['with_star'],
             'category_id' => $valid_data['category_id'],
-            
+            'user_id' => $user_name
         ]);
+
+        $response_code = 0;
+        if($card->save()){
+            $response = [
+                'msg' => 'Card Created',
+                'user' => $card
+            ];
+            $response_code = 201;
+        } else {
+            $response = ['msg' => 'an error occured while creating card'];
+            $response_code = 404;
+        }
+        return response()->json($response, $response_code);
 
     }
 

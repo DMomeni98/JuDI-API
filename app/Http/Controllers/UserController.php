@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     private static $store_validation_rules = [
         'email' => ['required', 'email', 'unique:users'],
-        'user_name' => ['min:3', 'max:20', 'alpha_dash', 'unique:users'],
+        'user_name' => ['nullable', 'min:3', 'max:20', 'alpha_dash', 'unique:users'],
         'password' => ['required', 'min:8', 'confirmed']];
 
     private static $signin_validation_rules = [
