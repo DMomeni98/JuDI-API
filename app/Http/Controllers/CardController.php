@@ -13,30 +13,24 @@ class CardController extends Controller
         'title' => ['required'],
         'description' => ['required', 'nullable'],
         'due' => ['required', 'nullable'],
-        'with_star' => ['required', 'nullable', 'boolean'],
+        'with_star' => ['nullable', 'boolean'],
         'category_id' =>['required', 'integer']
     ];
 
+    
+    
     /**
-     * Display a listing of the resource.
+     * Create a new AuthController instance.
      *
-     * @return \Illuminate\Http\Response
+     * @return void
      */
-    public function index()
+    public function __construct()
     {
-        //
+        $this->middleware('auth:api');
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
+    
+    
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -45,26 +39,11 @@ class CardController extends Controller
      */
     public function store(Request $request, $user_name)
     {
-        $valid_data = $request->validate(self::$store_validation_rules);
+        // check if user is signed in
+        if(! $this->check_signin($user_name)['match'])
+            return $this->check_signin($user_name)['response'];
         
-        if(!$this->match_request_with_user($user_name)){
-            $response = [
-                'msg' => "users didn't match",
-                'user' => null
-            ];
-            $response_code = 401;
-            return response()->json($response, $response_code);
-        }
-        
-        $card = new Card([
-            'title' => $valid_data['title'],
-            'description' => $valid_data['description'],
-            'due' => $valid_data['due'],
-            'with_star' => $valid_data['with_star'],
-            'category_id' => $valid_data['category_id'],
-            'user_id' => $user_name
-        ]);
-
+        $card = $this->create($request, $user_name);
         $response_code = 0;
         if($card->save()){
             $response = [
@@ -77,21 +56,41 @@ class CardController extends Controller
             $response_code = 404;
         }
         return response()->json($response, $response_code);
-
     }
 
-    
-      /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function me()
-    {
-        return response()->json(auth()->user());
+
+    // create an object from Card Model, is used by store() method
+    public function create($request, $user_name){
+        $valid_data = $request->validate(self::$store_validation_rules);
+        $card = new Card([
+            'title' => $valid_data['title'],
+            'description' => $valid_data['description'],
+            'due' => $valid_data['due'],
+            'with_star' => $this->set_default_to_with_star($valid_data['with_star'], $request),
+            'category_id' => $valid_data['category_id'],
+            'is_done' => $this->set_default_to_is_done($request),
+            'user_id' => $this->get_user_id($user_name)
+        ]);
+        return $card;
     }
-    
-    
+
+
+    //check sign in and auth, is used by store() method
+    public function check_signin($user_name){
+
+        if(!$this->match_request_with_user($user_name)){
+            $response = [
+                'msg' => "users didn't match",
+                'user' => null
+            ];
+            $response_code = 401;
+            return ['match' => false, 'response' => response()->json($response, $response_code)];
+        }
+        else
+            return ['match' => true];
+    }
+
+
     public function match_request_with_user($user_name){
         $result = false;
         $user = User::where('user_name', $user_name)->first();
@@ -100,6 +99,46 @@ class CardController extends Controller
         }
         return $result;
     }
+
+    
+    /**
+     * Get the authenticated User.
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function me()
+    {
+        return response()->json(auth()->user());
+    }
+
+
+    //get user_id from $user_name, is used by create() method
+    public function get_user_id($user_name){
+        //get user_id from $user_name    
+        $user = User::where('user_name', $user_name)->first();
+        return $user->id;
+    }
+
+    //set a default value to with_star, is used by create() method
+    public function set_default_to_with_star($feild, Request $request){
+
+        if(! empty($request->input('with_star')) )    
+            return $feild;
+        else
+            return false;
+
+    }
+    
+     //set a default value to is_done, is used by create() method
+     public function set_default_to_is_done(Request $request){
+
+        if(! empty($request->input('is_done')) )    
+            return $feild;
+        else
+            return false;
+
+    }
+   
 
 
     /**
