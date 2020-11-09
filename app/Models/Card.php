@@ -22,4 +22,8 @@ class Card extends Model
     public function user(){
         return $this->belongsTo('App\Models\User');
     }
+    public static function get_all()
+    {
+        return DB::select("select * from `cards`;");
+    }
 }

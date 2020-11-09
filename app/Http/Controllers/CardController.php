@@ -12,7 +12,7 @@ class CardController extends Controller
     private static $store_validation_rules = [
         'title' => ['required'],
         'description' => ['required', 'nullable'],
-        'due' => ['required', 'nullable'],
+        'due' => ['nullable'],
         'with_star' => ['nullable', 'boolean'],
         'category_id' =>['required', 'integer']
     ];
@@ -133,7 +133,7 @@ class CardController extends Controller
      public function set_default_to_is_done(Request $request){
 
         if(! empty($request->input('is_done')) )    
-            return $feild;
+            return $request->input('is_done');
         else
             return false;
 
@@ -147,11 +147,36 @@ class CardController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($user_name)
     {
-        //
+        $user_id = $this->get_user_id($user_name);
+        $cards = Card::where('user_id', $user_id)->get();
+        //array_push($cards, Card::select('id', 'title', 'description', 'due', 'with_star', 'category_id', 'is_done')->where('user_id', $user_id)->get());
+        $response = [
+            'msg' => 'Cards found',
+            'cards' => $cards
+        ];
+        $response_code = 201;
+        return response()->json($response, $response_code);
     }
 
+
+    //show cards of one due date
+    public function show_one_due($user_name, $due){
+        $user_id = $this->get_user_id($user_name);
+        $cards = Card::where('user_id', $user_id)->where('due', $due)->get();
+        //array_push($cards, Card::select('id', 'title', 'description', 'due', 'with_star', 'category_id', 'is_done')->where('user_id', $user_id)->get());
+        $response = [
+            'msg' => 'Cards found',
+            'cards' => $cards
+        ];
+        $response_code = 201;
+        return response()->json($response, $response_code);
+    }
+
+   
+   
+   
     /**
      * Show the form for editing the specified resource.
      *
