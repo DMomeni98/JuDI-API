@@ -206,8 +206,32 @@ class CardController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($user_name, $id)
     {
-        //
+        $card = Card::where('id', (int)$id)->get();
+        if(count($card) == 0){
+            $response = ['message' => 'no such a card with this id'];
+            $response_code = 404;
+            return response()->json($response, $response_code);
+        }
+        Card::where('id', (int)$id)->delete();
+        $response = ['message' => 'card removed'];
+        $response_code = 200;
+        return response()->json($response, $response_code);
     }
+    
+    //show one card
+    public function show_one_card($user_name, $card_id){
+        $card = Card::where('id', $card_id)->get();
+        if(count($card) == 0){
+            $response = ['message' => 'no such a card with this id'];
+            $response_code = 404;
+            return response()->json($response, $response_code);
+        }
+        $response = ['card' => $card];
+        $response_code = 200;
+        return response()->json($response, $response_code);
+    }
+    
+    
 }

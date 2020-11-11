@@ -35,3 +35,8 @@ Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('ap
 Route::post("users/{user_name}/cards", [CardController::class, 'store'])->middleware('api');
 ROute::get("users/{user_name}/cards/get", [CardController::class, 'show'])->middleware('api');
 Route::get("users/{user_name}/cards/get/{due}", [CardController::class, 'show_one_due'])->middleware('api');
+
+
+
+Route::get("users/{user_name}/cards/{id}", [CardController::class, 'show_one_card'])->middleware('api');
+Route::get("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
