@@ -151,16 +151,32 @@ class UserController extends Controller
             $request->validate(['user_name' => ['min:3', 'max:20', 'alpha_dash', 'required'],
                 'full_name' => ['nullable', 'max:70', 'regex:/^[\pL\s\-]+$/u', 'required']
             ]);
-            $full_name = $request->input('full_name');
-            $new_user_name = $request->input('user_name');
-            $user_exists = User::where("user_name", $new_user_name)->first();
+            
             $curr_user = User::where("user_name", $user_name)->first();
+            //get new information from request
+            $new_full_name = $request->input('full_name');
+            $new_user_name = $request->input('user_name');
+            $new_email = $request->input('email');
+            $new_password = $request->input('password');
+            
+            // search databese for new_email and new_user_name
+            $user_exists = User::where("user_name", $new_user_name)->first();
+            $email_exists = User::where("email", $new_email)->first();
+
+            // taken username
             if(is_null($user_exists)){
                 $curr_user->user_name = $new_user_name;
             } elseif(!is_null($user_exists) && $user_exists->user_name != $user_name){
                 $response['error'] = 'sorry, this username is taken.';
             }
-            $curr_user->full_name = $full_name;
+
+            // taken email
+            if(is_null($email_exists)){
+                $curr_user->email = $new_email;
+            } elseif(!is_null($email_exists) && $email_exists->user_name != $user_name){
+                $response['error'] = 'sorry, this email is taken.';
+            }
+            $curr_user->full_name = $new_full_name;
             $curr_user->save();
 
             $response['msg'] = 'user updated';

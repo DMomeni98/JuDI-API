@@ -166,6 +166,11 @@ class CardController extends Controller
         $user_id = $this->get_user_id($user_name);
         $cards = Card::where('user_id', $user_id)->where('due', $due)->get();
         //array_push($cards, Card::select('id', 'title', 'description', 'due', 'with_star', 'category_id', 'is_done')->where('user_id', $user_id)->get());
+        if(count($cards) == 0){
+            $response = ['msg' => 'no card found!'];
+            $response_code = 404;
+            return response()->json($response, $response_code);
+        }
         $response = [
             'msg' => 'Cards found',
             'cards' => $cards
