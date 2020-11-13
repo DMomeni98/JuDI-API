@@ -15,7 +15,7 @@ class UserController extends Controller
         'password' => ['required', 'min:8', 'confirmed']];
 
     private static $signin_validation_rules = [
-        'email' => ['required', 'email'],
+        'user_name' => ['required'],
         'password' => 'required'
     ];
    
@@ -65,7 +65,7 @@ class UserController extends Controller
 
     public function signin(Request $request){
         $valid_data = $request->validate(self::$signin_validation_rules);
-        $credentials = request(['email', 'password']);
+        $credentials = request(['user_name', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -168,6 +168,7 @@ class UserController extends Controller
                 $curr_user->user_name = $new_user_name;
             } elseif(!is_null($user_exists) && $user_exists->user_name != $user_name){
                 $response['error'] = 'sorry, this username is taken.';
+                return response()->json($response, 401);
             }
 
             // taken email
@@ -175,8 +176,10 @@ class UserController extends Controller
                 $curr_user->email = $new_email;
             } elseif(!is_null($email_exists) && $email_exists->user_name != $user_name){
                 $response['error'] = 'sorry, this email is taken.';
+                return response()->json($response, 401);
             }
             $curr_user->full_name = $new_full_name;
+            $curr_user->password = bcrypt($new_password);
             $curr_user->save();
 
             $response['msg'] = 'user updated';
@@ -192,24 +195,6 @@ class UserController extends Controller
         }
         return response()->json($response, $response_code);
     }
-
-
-    public function upload_avatar(Request $request ,$user_name){
-        if(!$this->match_request_with_user($user_name)){
-            return response()->json(["msg" => "not"], 404);
-        }
-        
-    if(!$request->hasFile('photo')) {
-        return response()->json([$request->all()], 400);
-    }
-    $file = $request->file('photo');
-    if(!$file->isValid()) {
-        return response()->json(['invalid_file_upload'], 400);
-    }
-    $path = public_path() . '/uploads/images/avatars/';
-    $file->move($path, $file->getClientOriginalName());
-    return response()->json(compact('path'));
-}
 
 
     public function change_password(Request $request, $user_name)
@@ -231,6 +216,27 @@ class UserController extends Controller
             return response()->json($response, $response_code);
         }
     }
+
+
+    public function upload_avatar(Request $request ,$user_name){
+        if(!$this->match_request_with_user($user_name)){
+            return response()->json(["msg" => "not"], 404);
+        }
+        
+        if(!$request->hasFile('photo')) {
+            return response()->json([$request->all()], 400);
+        }
+        $file = $request->file('photo');
+        if(!$file->isValid()) {
+            return response()->json(['invalid_file_upload'], 400);
+        }
+        $path = public_path() . '/uploads/images/avatars/';
+        $file->move($path, $file->getClientOriginalName());
+        return response()->json(compact('path'));
+    }
+
+
+    
     
     /**
      * Get the token array structure.
