@@ -153,7 +153,7 @@ class UserTest extends TestCase
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users/signin',
             ['password' => '12345678',
-             'email' => 'homa@test.com'
+             'user_name' => 'homa'
             ]);
              
 

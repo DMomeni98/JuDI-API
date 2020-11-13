@@ -190,7 +190,7 @@ private static $update_validation_rules = [
 
    public function update(Request $request, $user_name, $card_id)
     {
-$valid_data = $request->validate(self::$update_validation_rules);
+        $valid_data = $request->validate(self::$update_validation_rules);
         $curr_card = Card::where('id', $card_id)->first();
         
         if(! is_null($valid_data['title']))
@@ -208,23 +208,10 @@ $valid_data = $request->validate(self::$update_validation_rules);
         
         $curr_card->save();
         $response['msg'] = 'card updated';
-            $response['card'] = $curr_card;
-            $response_code = 200;
+        $response['card'] = $curr_card;
+        $response_code = 200;
         return response()->json($response, $response_code);
 }
-   
-   
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
 
 
     /**
