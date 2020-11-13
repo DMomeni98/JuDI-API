@@ -40,3 +40,6 @@ Route::get("users/{user_name}/cards/get/{due}", [CardController::class, 'show_on
 
 Route::get("users/{user_name}/cards/{id}", [CardController::class, 'show_one_card'])->middleware('api');
 Route::get("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
+
+
+Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update'])->middleware('api');

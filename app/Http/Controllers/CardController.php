@@ -17,6 +17,15 @@ class CardController extends Controller
         'category_id' =>['required', 'integer']
     ];
 
+
+private static $update_validation_rules = [
+        'title' => ['nullable'],
+        'description' => ['nullable'],
+        'due' => ['nullable'],
+        'with_star' => ['nullable', 'boolean'],
+        'category_id' => ['nullable', 'integer'],
+        'is_done' => ['nullable', 'boolean']
+    ];
     
     
     /**
@@ -179,7 +188,30 @@ class CardController extends Controller
         return response()->json($response, $response_code);
     }
 
-   
+   public function update(Request $request, $user_name, $card_id)
+    {
+$valid_data = $request->validate(self::$update_validation_rules);
+        $curr_card = Card::where('id', $card_id)->first();
+        
+        if(! is_null($valid_data['title']))
+            $curr_card->title = $valid_data['title'];
+        if(! is_null($valid_data['description']))
+            $curr_card->description = $valid_data['description'];
+        if(! is_null($valid_data['due']))
+            $curr_card->due = $valid_data['due'];
+        if(! is_null($valid_data['with_star']))
+            $curr_card->with_star = $valid_data['with_star'];
+        if(! is_null($request->input('is_done')))
+            $curr_card->is_done = $request->input('is_done');
+        if(! is_null($valid_data['category_id']))
+            $curr_card->category_id = $valid_data['category_id'];
+        
+        $curr_card->save();
+        $response['msg'] = 'card updated';
+            $response['card'] = $curr_card;
+            $response_code = 200;
+        return response()->json($response, $response_code);
+}
    
    
     /**
@@ -193,17 +225,7 @@ class CardController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
+
 
     /**
      * Remove the specified resource from storage.
