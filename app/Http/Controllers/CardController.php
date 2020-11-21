@@ -14,7 +14,9 @@ class CardController extends Controller
         'description' => ['required', 'nullable'],
         'due' => ['nullable'],
         'with_star' => ['nullable', 'boolean'],
-        'category_id' =>['required', 'integer']
+        'category_id' =>['required', 'integer'],
+        'is_repetitive' => ['bool', 'nullable'],
+        'repeat_days' => ['nullable']
     ];
 
 
@@ -24,7 +26,8 @@ private static $update_validation_rules = [
         'due' => ['nullable'],
         'with_star' => ['nullable', 'boolean'],
         'category_id' => ['nullable', 'integer'],
-        'is_done' => ['nullable', 'boolean']
+        'is_done' => ['nullable', 'boolean'],
+        'is_repetitive' => ['bool', 'nullable']
     ];
     
     
@@ -52,7 +55,40 @@ private static $update_validation_rules = [
         if(! $this->check_signin($user_name)['match'])
             return $this->check_signin($user_name)['response'];
         
-        $card = $this->create($request, $user_name);
+        //check repetitive
+        if(! $request->input('is_repetitive') )
+            return $this->create($request, $user_name, $request->input('due'), 0);
+        else{
+            $repeat_days = $request->validate(self::$store_validation_rules)['repeat_days'];
+            $cards = [];
+            $repetitive_id = Card::max('repetitive_id') + 1;
+            foreach($repeat_days as $due)
+                array_push($cards, $this->create($request, $user_name, $due, $repetitive_id));
+
+            $response_code = 201;
+            $response = $cards;
+            return response()->json($response, $response_code);
+        } 
+
+    }
+
+
+    // create an object from Card Model, is used by store() method
+    public function create($request, $user_name, $due, $repetitive_id){
+        $valid_data = $request->validate(self::$store_validation_rules);
+        
+        $card = new Card([
+            'title' => $valid_data['title'],
+            'description' => $valid_data['description'],
+            'due' => $due,
+            'with_star' => $this->set_default_to_with_star($valid_data['with_star'], $request),
+            'category_id' => $valid_data['category_id'],
+            'is_done' => $this->set_default_to_is_done($request),
+            'user_id' => $this->get_user_id($user_name),
+            'repetitive_id' => $repetitive_id
+        ]);
+        //$card['repetitive_id'] = $repetitive_id;
+        
         $response_code = 0;
         if($card->save()){
             $response = [
@@ -65,22 +101,6 @@ private static $update_validation_rules = [
             $response_code = 404;
         }
         return response()->json($response, $response_code);
-    }
-
-
-    // create an object from Card Model, is used by store() method
-    public function create($request, $user_name){
-        $valid_data = $request->validate(self::$store_validation_rules);
-        $card = new Card([
-            'title' => $valid_data['title'],
-            'description' => $valid_data['description'],
-            'due' => $valid_data['due'],
-            'with_star' => $this->set_default_to_with_star($valid_data['with_star'], $request),
-            'category_id' => $valid_data['category_id'],
-            'is_done' => $this->set_default_to_is_done($request),
-            'user_id' => $this->get_user_id($user_name)
-        ]);
-        return $card;
     }
 
 

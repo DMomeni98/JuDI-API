@@ -26,6 +26,7 @@ class CreateCardsTable extends Migration
             $table->integer('category_id');
             //$table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->boolean('is_done')->defualt(0);
+            $table->integer('repetitive_id')->default(0);
         });
     }
 

@@ -17,7 +17,8 @@ class Card extends Model
         'category_id',
         'with_star',
         'is_done',
-        'user_id'
+        'user_id',
+        'repetitive_id'
     ];
     public function user(){
         return $this->belongsTo('App\Models\User');
