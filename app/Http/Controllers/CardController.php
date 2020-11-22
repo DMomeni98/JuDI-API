@@ -165,7 +165,6 @@ private static $update_validation_rules = [
             return $request->input('is_done');
         else
             return false;
-
     }
    
 
@@ -185,7 +184,7 @@ private static $update_validation_rules = [
             'msg' => 'Cards found',
             'cards' => $cards
         ];
-        $response_code = 201;
+        $response_code = 200;
         return response()->json($response, $response_code);
     }
 
@@ -204,11 +203,55 @@ private static $update_validation_rules = [
             'msg' => 'Cards found',
             'cards' => $cards
         ];
-        $response_code = 201;
+        $response_code = 200;
         return response()->json($response, $response_code);
     }
 
-   public function update(Request $request, $user_name, $card_id)
+
+    //show one card
+    public function show_one_card($user_name, $card_id){
+        $card = Card::where('id', $card_id)->get();
+        if(count($card) == 0){
+            $response = ['message' => 'no such a card with this id'];
+            $response_code = 404;
+            return response()->json($response, $response_code);
+        }
+        $response = ['card' => $card];
+        $response_code = 200;
+        return response()->json($response, $response_code);
+    }
+
+
+    public function update_root(Request $request, $user_name, $card_id){
+        $card = Card::where('id', $card_id)->first();
+        $card['is_done'] = $request->validate(self::$update_validation_rules)['is_done'];
+        $card['due'] = $request->validate(self::$update_validation_rules)['due'];
+        $card->save();
+        if($card['repetitive_id'] == 0){
+            $response = [
+                'msg'  => "card updated successfully",
+                'card' => $this->update($request, $user_name, $card_id)                 
+            ];
+            return response()->json($response, 200);
+        }
+        else{
+            $repetitive_id = $card['repetitive_id'];
+            $all_repeats = Card::where('repetitive_id', $repetitive_id)->get();
+            $cards = [];
+            foreach($all_repeats as $one_card)
+                array_push($cards, $this->update($request, $user_name, $one_card['id']));
+            $response = [
+                'msg' => 'cards updated successfully',
+                'cards' => $cards
+            ];
+            return response()->json($response, 200);
+            
+        }
+
+    }
+    
+    
+    public function update($request, $user_name, $card_id)
     {
         $valid_data = $request->validate(self::$update_validation_rules);
         $curr_card = Card::where('id', $card_id)->first();
@@ -217,20 +260,16 @@ private static $update_validation_rules = [
             $curr_card->title = $valid_data['title'];
         if(! is_null($valid_data['description']))
             $curr_card->description = $valid_data['description'];
-        if(! is_null($valid_data['due']))
-            $curr_card->due = $valid_data['due'];
         if(! is_null($valid_data['with_star']))
             $curr_card->with_star = $valid_data['with_star'];
-        if(! is_null($request->input('is_done')))
-            $curr_card->is_done = $request->input('is_done');
         if(! is_null($valid_data['category_id']))
             $curr_card->category_id = $valid_data['category_id'];
         
         $curr_card->save();
-        $response['msg'] = 'card updated';
-        $response['card'] = $curr_card;
-        $response_code = 200;
-        return response()->json($response, $response_code);
+        //$response['msg'] = 'card updated';
+        //$response['card'] = $curr_card;
+        //$response_code = 200;
+        return $curr_card;
 }
 
 
@@ -253,19 +292,5 @@ private static $update_validation_rules = [
         $response_code = 200;
         return response()->json($response, $response_code);
     }
-    
-    //show one card
-    public function show_one_card($user_name, $card_id){
-        $card = Card::where('id', $card_id)->get();
-        if(count($card) == 0){
-            $response = ['message' => 'no such a card with this id'];
-            $response_code = 404;
-            return response()->json($response, $response_code);
-        }
-        $response = ['card' => $card];
-        $response_code = 200;
-        return response()->json($response, $response_code);
-    }
-    
-    
+
 }

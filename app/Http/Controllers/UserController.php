@@ -148,8 +148,9 @@ class UserController extends Controller
         ])->validate();
 
         if ($this->match_request_with_user($user_name)){
-            $request->validate(['user_name' => ['min:3', 'max:20', 'alpha_dash', 'required'],
-                'full_name' => ['nullable', 'max:70', 'regex:/^[\pL\s\-]+$/u', 'required']
+
+            $request->validate(['user_name' => ['min:3', 'max:20', 'alpha_dash', 'nullable'],
+                'full_name' => ['nullable', 'max:70', 'regex:/^[\pL\s\-]+$/u', 'nullable']
             ]);
             
             $curr_user = User::where("user_name", $user_name)->first();
@@ -160,26 +161,30 @@ class UserController extends Controller
             $new_password = $request->input('password');
             
             // search databese for new_email and new_user_name
-            $user_exists = User::where("user_name", $new_user_name)->first();
-            $email_exists = User::where("email", $new_email)->first();
+            $token_user_name = User::where("user_name", $new_user_name)->first();
+            $token_email = User::where("email", $new_email)->first();
 
             // taken username
-            if(is_null($user_exists)){
-                $curr_user->user_name = $new_user_name;
-            } elseif(!is_null($user_exists) && $user_exists->user_name != $user_name){
+            if(is_null($token_user_name)){
+                if(!is_null($new_user_name))
+                    $curr_user->user_name = $new_user_name;
+            } elseif(!is_null($token_user_name) && $token_user_name->user_name != $user_name){
                 $response['error'] = 'sorry, this username is taken.';
                 return response()->json($response, 401);
             }
 
             // taken email
-            if(is_null($email_exists)){
-                $curr_user->email = $new_email;
-            } elseif(!is_null($email_exists) && $email_exists->user_name != $user_name){
+            if(is_null($token_email)){
+                if(! is_null($new_email))
+                    $curr_user->email = $new_email;
+            } elseif(!is_null($token_email) && $token_email->user_name != $user_name){
                 $response['error'] = 'sorry, this email is taken.';
                 return response()->json($response, 401);
             }
-            $curr_user->full_name = $new_full_name;
-            $curr_user->password = bcrypt($new_password);
+            if(! is_null($new_full_name))
+                $curr_user->full_name = $new_full_name;
+            if(! is_null($new_password))
+                $curr_user->password = bcrypt($new_password);
             $curr_user->save();
 
             $response['msg'] = 'user updated';
@@ -194,6 +199,10 @@ class UserController extends Controller
             $response_code = 401;
         }
         return response()->json($response, $response_code);
+    }
+
+    public function token_user_name($user_name){
+        
     }
 
 

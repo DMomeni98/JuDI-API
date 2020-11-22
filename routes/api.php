@@ -42,4 +42,4 @@ Route::get("users/{user_name}/cards/{id}", [CardController::class, 'show_one_car
 Route::get("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
 
 
-Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update'])->middleware('api');
+Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update_root'])->middleware('api');
