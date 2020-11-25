@@ -194,11 +194,11 @@ private static $update_validation_rules = [
         $user_id = $this->get_user_id($user_name);
         $cards = Card::where('user_id', $user_id)->where('due', $due)->get();
         //array_push($cards, Card::select('id', 'title', 'description', 'due', 'with_star', 'category_id', 'is_done')->where('user_id', $user_id)->get());
-        if(count($cards) == 0){
-            $response = ['msg' => 'no card found!'];
-            $response_code = 404;
-            return response()->json($response, $response_code);
-        }
+//        if(count($cards) == 0){
+//            $response = ['msg' => 'no card found!'];
+//            $response_code = 404;
+//            return response()->json($response, $response_code);
+//        }
         $response = [
             'msg' => 'Cards found',
             'cards' => $cards
@@ -272,6 +272,21 @@ private static $update_validation_rules = [
         return $curr_card;
 }
 
+
+// show week cards
+    public function weekboard(Request $request, $user_name){
+        $days = $request->input('days');
+        $one_day_cards = [];
+        foreach($days as $day){
+            array_push($one_day_cards, $this->show_one_due($user_name, $day)->original['cards']);
+        }
+        $response = [
+            'msg' => 'cards returned seuccessfully',
+            'cards' => $one_day_cards
+        ];
+        $response_code = 200;
+        return response()->json($response, $response_code);
+    }
 
     /**
      * Remove the specified resource from storage.

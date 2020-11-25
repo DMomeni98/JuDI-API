@@ -43,3 +43,4 @@ Route::get("users/{user_name}/cards/remove/{id}", [CardController::class, 'destr
 
 
 Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update_root'])->middleware('api');
+Route::get("users/{user_name}/weekboard", [CardController::class, 'weekboard'])->middleware('api');
