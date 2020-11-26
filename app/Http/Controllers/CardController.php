@@ -11,7 +11,7 @@ class CardController extends Controller
 
     private static $store_validation_rules = [
         'title' => ['required'],
-        'description' => ['required', 'nullable'],
+        'description' => ['nullable'],
         'due' => ['nullable'],
         'with_star' => ['nullable', 'boolean'],
         'category_id' =>['required', 'integer'],
@@ -179,7 +179,12 @@ private static $update_validation_rules = [
     {
         $user_id = $this->get_user_id($user_name);
         $cards = Card::where('user_id', $user_id)->get();
-        //array_push($cards, Card::select('id', 'title', 'description', 'due', 'with_star', 'category_id', 'is_done')->where('user_id', $user_id)->get());
+        foreach($cards as $card){
+            if ($card['repetitive_id'] == 0)
+                $card['is_repetitive'] = false;
+            else
+                $card['is_repetitive'] = true;
+        }
         $response = [
             'msg' => 'Cards found',
             'cards' => $cards
@@ -193,12 +198,12 @@ private static $update_validation_rules = [
     public function show_one_due($user_name, $due){
         $user_id = $this->get_user_id($user_name);
         $cards = Card::where('user_id', $user_id)->where('due', $due)->get();
-        //array_push($cards, Card::select('id', 'title', 'description', 'due', 'with_star', 'category_id', 'is_done')->where('user_id', $user_id)->get());
-//        if(count($cards) == 0){
-//            $response = ['msg' => 'no card found!'];
-//            $response_code = 404;
-//            return response()->json($response, $response_code);
-//        }
+        foreach($cards as $card){
+            if ($card['repetitive_id'] == 0)
+                $card['is_repetitive'] = false;
+            else
+                $card['is_repetitive'] = true;
+        }
         $response = [
             'msg' => 'Cards found',
             'cards' => $cards
@@ -216,6 +221,10 @@ private static $update_validation_rules = [
             $response_code = 404;
             return response()->json($response, $response_code);
         }
+        if ($card['repetitive_id'] == 0)
+                $card['is_repetitive'] = false;
+            else
+                $card['is_repetitive'] = true;
         $response = ['card' => $card];
         $response_code = 200;
         return response()->json($response, $response_code);
