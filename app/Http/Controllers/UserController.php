@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 // use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -19,6 +20,7 @@ class UserController extends Controller
         'password' => 'required'
     ];
    
+    private static $avatars_path = "/storage/uploads/avatars/";
     /**
      * Create a new AuthController instance.
      *
@@ -49,7 +51,7 @@ class UserController extends Controller
                 'href' => parent::$base_route . 'users/sigin',
                 'method' => 'POST',
                 'params' => ['email', 'password']
-            ];;
+            ];
             $response = [
                 'msg' => 'User Created',
                 'user' => $user
@@ -92,9 +94,14 @@ class UserController extends Controller
             'user_name' => 'required|exists:users',
         ])->validate();
         if ($this->match_request_with_user($user_name)){
+            $user = json_decode($this->me()->original, true);
+
+            // if (file_exists(public_path().self::$avatars_path."user_id_1")){
+            //     $user += ["found" => self::$avatars_path."user_id_1.jpeg"];
+            // }
             $response = [
             'msg' => "operation successful", 
-            'user' => $this->me()
+            'user' => $user
             ];
             $response_code = 200;
         }
@@ -229,19 +236,22 @@ class UserController extends Controller
 
     public function upload_avatar(Request $request ,$user_name){
         if(!$this->match_request_with_user($user_name)){
-            return response()->json(["msg" => "not"], 404);
+            return response()->json(["msg" => "invalid user name"], 404);
         }
-        
-        if(!$request->hasFile('photo')) {
-            return response()->json([$request->all()], 400);
+
+        if(!$request->hasFile('avatar')) {
+            return response()->json(["msg" => "no file"], 400);
         }
-        $file = $request->file('photo');
-        if(!$file->isValid()) {
+        if(!$request->file('avatar')->isValid()) {
             return response()->json(['invalid_file_upload'], 400);
         }
-        $path = public_path() . '/uploads/images/avatars/';
-        $file->move($path, $file->getClientOriginalName());
-        return response()->json(compact('path'));
+        $request->validate(['avatar' => 'mimes:jpeg,png|max:1024']);
+        
+        $path = public_path() . self::$avatars_path;
+        $file_name = "user_id_" . $this->me()->original->id . "." .$request->file('avatar')->extension();
+        $request->file('avatar')->move($path, $file_name);
+        return response()->json(["url" =>  asset(self::$avatars_path.$file_name)], 200);
+        // return response()->json(["url" =>  public_path()], 200);
     }
 
 
