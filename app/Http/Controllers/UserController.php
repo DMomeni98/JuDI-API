@@ -95,10 +95,14 @@ class UserController extends Controller
         ])->validate();
         if ($this->match_request_with_user($user_name)){
             $user = json_decode($this->me()->original, true);
+            $avatar = public_path() . self::$avatars_path . "user_id_" . $this->me()->original->id;
 
-            // if (file_exists(public_path().self::$avatars_path."user_id_1")){
-            //     $user += ["found" => self::$avatars_path."user_id_1.jpeg"];
-            // }
+            if (file_exists($avatar.".jpeg")){
+                $user += ["avatar" => asset(self::$avatars_path."user_id_1.jpeg")];
+            }
+            if (file_exists($avatar.".png")){
+                $user += ["avatar" => asset(self::$avatars_path."user_id_1.png")];
+            }
             $response = [
             'msg' => "operation successful", 
             'user' => $user
