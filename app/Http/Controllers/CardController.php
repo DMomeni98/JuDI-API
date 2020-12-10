@@ -93,7 +93,7 @@ private static $update_validation_rules = [
         if($card->save()){
             $response = [
                 'msg' => 'Card Created',
-                'user' => $card
+                'card' => $card
             ];
             $response_code = 201;
         } else {
@@ -232,6 +232,11 @@ private static $update_validation_rules = [
 
 
     public function update_root(Request $request, $user_name, $card_id){
+        // check if user is signed in
+        if(! $this->check_signin($user_name)['match'])
+            return $this->check_signin($user_name)['response'];
+        if(! $this->match_request_with_user($user_name))
+            return response()->json("user didnt match", 401);
         $card = Card::where('id', $card_id)->first();
         $card['is_done'] = $request->validate(self::$update_validation_rules)['is_done'];
         $card['due'] = $request->validate(self::$update_validation_rules)['due'];

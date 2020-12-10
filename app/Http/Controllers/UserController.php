@@ -169,7 +169,7 @@ class UserController extends Controller
             $new_full_name = $request->input('full_name');
             $new_user_name = $request->input('user_name');
             $new_email = $request->input('email');
-            $new_password = $request->input('password');
+            //$new_password = $request->input('password');
             
             // search databese for new_email and new_user_name
             $token_user_name = User::where("user_name", $new_user_name)->first();
@@ -192,10 +192,11 @@ class UserController extends Controller
                 $response['error'] = 'sorry, this email is taken.';
                 return response()->json($response, 401);
             }
+
             if(! is_null($new_full_name))
                 $curr_user->full_name = $new_full_name;
-            if(! is_null($new_password))
-                $curr_user->password = bcrypt($new_password);
+            //if(! is_null($new_password))
+                //$curr_user->password = bcrypt($new_password);
             $curr_user->save();
 
             $response['msg'] = 'user updated';
@@ -212,19 +213,24 @@ class UserController extends Controller
         return response()->json($response, $response_code);
     }
 
-    public function token_user_name($user_name){
-        
-    }
-
 
     public function change_password(Request $request, $user_name)
     {
         if($this->match_request_with_user($user_name)){
             $validated = $request->validate(
-                ['password' => ['required', 'min:8', 'string', 'confirmed']
+                ['new_password' => ['required', 'min:8', 'string', 'confirmed']
                 ]);
             $user = User::where('user_name', $user_name)->first();
-            $user->password = bcrypt($validated['password']);
+            
+            // check old password
+            if(! password_verify($request->input('old_password'), $user['password'])){
+                $response = [
+                    'msg' => "old password is not correct"
+                    ];
+                    $response_code = 404;
+                    return response()->json($response, $response_code);
+            }
+            $user->password = bcrypt($validated['new_password']);
             $user->save();
             return $this->signout("password changed successfuly, please sign in again");
         }
