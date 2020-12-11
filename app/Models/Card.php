@@ -18,7 +18,8 @@ class Card extends Model
         'with_star',
         'is_done',
         'user_id',
-        'repetitive_id'
+        'repetitive_id',
+        'label_name'
     ];
     public function user(){
         return $this->belongsTo('App\Models\User');
