@@ -33,9 +33,13 @@ class CardTest extends TestCase
              "with_star" => true,
              "category_id" =>"5",
              "is_done" => true,
-             "is_repetetive" => false
+             "is_repetetive" => false,
+             "label_name" => "hello"
             ]);
-             
+        
+        $card = $response->original['card'];  
+        $id = $card['id']; 
+            
         $response
             ->assertStatus(201)
             ->assertJson([
@@ -59,7 +63,8 @@ class CardTest extends TestCase
              "category_id" =>"5",
              "is_done" => true,
              "is_repetitive" => true,
-             "repeat_days" => ["2020-2-2", "2020-2-4"]
+             "repeat_days" => ["2020-2-2", "2020-2-4"],
+             "label_name" => "hello"
             ]);
              
         $response
@@ -106,7 +111,7 @@ class CardTest extends TestCase
             ]);
 
         $response = $this->withHeaders(self::$headers)->
-        json('PUT', 'api/users/homa/cards/update/51',
+        json('PUT', 'api/users/homa/cards/update/1',
             ['title' => 'sport',                 
              "description" => "12345678",
              "due" => "2020-11-17T16:40",
@@ -132,7 +137,7 @@ class CardTest extends TestCase
             ]);
 
         $response = $this->withHeaders(self::$headers)->
-        json('PUT', 'api/users/homa/cards/update/51',
+        json('PUT', 'api/users/homa/cards/update/2',
             ['title' => 'sport',                 
              "description" => "12345",
              "due" => "2020-11-17T16:40",
@@ -158,7 +163,7 @@ class CardTest extends TestCase
             ]);
 
         $response = $this->withHeaders(self::$headers)->
-        json('PUT', 'api/users/homa/cards/update/52',
+        json('PUT', 'api/users/homa/cards/update/1',
             ['title' => '',                 
              "description" => "",
              "due" => "",
@@ -183,7 +188,7 @@ class CardTest extends TestCase
             ]);
         
         $response = $this->withHeaders(self::$headers)
-        ->json('GET', 'api/users/homa/cards/remove/51');
+        ->json('DELETE', 'api/users/homa/cards/remove/1');
     
         $response
         ->assertStatus(200);
