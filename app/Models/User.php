@@ -60,6 +60,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany('App\Models\Card');
     }
 
+    public function labels(){
+        return $this->belongsToMany('App\Models\Label');
+    }
     // Rest omitted for brevity
 
     /**

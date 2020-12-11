@@ -37,9 +37,11 @@ Route::post("users/{user_name}/cards", [CardController::class, 'store'])->middle
 ROute::get("users/{user_name}/cards/get", [CardController::class, 'show'])->middleware('api');
 Route::get("users/{user_name}/cards/get/{due}", [CardController::class, 'show_one_due'])->middleware('api');
 Route::get("users/{user_name}/cards/{id}", [CardController::class, 'show_one_card'])->middleware('api');
-Route::get("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
+Route::delete("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
 Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update_root'])->middleware('api');
 Route::get("users/{user_name}/weekboard", [CardController::class, 'weekboard'])->middleware('api');
 
 //labels
 Route::post("users/{user_name}/labels", [LabelController::class, 'store'])->middleware('api');
+Route::delete("users/{user_name}/labels/{id}", [LabelController::class, 'destroy'])->middleware('api');
+Route::get("users/{user_name}/labels/", [LabelController::class, 'index'])->middleware('api');
