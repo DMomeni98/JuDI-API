@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\LabelController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +27,6 @@ Route::post("users", [UserController::class, 'store']);
 Route::put("users/{user_name}", [UserController::class, 'update_profile'])->middleware('api');
 Route::put("users/{user_name}/change_password", [UserController::class, 'change_password'])->middleware('api');
 Route::post("users/{user_name}/upload_avatar", [UserController::class, 'upload_avatar'])->middleware('api');
-Route::post("users/{user_name}/upload_avatar", [UserController::class, 'upload_avatar'])->middleware('api');
 Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
 Route::get("users/{user_name}", [UserController::class, 'index'])->middleware('api');
 Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
@@ -40,3 +40,6 @@ Route::get("users/{user_name}/cards/{id}", [CardController::class, 'show_one_car
 Route::get("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
 Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update_root'])->middleware('api');
 Route::get("users/{user_name}/weekboard", [CardController::class, 'weekboard'])->middleware('api');
+
+//labels
+Route::post("users/{user_name}/labels", [LabelController::class, 'store'])->middleware('api');
