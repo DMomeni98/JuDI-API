@@ -16,6 +16,12 @@ class LabelController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }   
+    
     public function index()
     {
         //
@@ -99,9 +105,15 @@ class LabelController extends Controller
      * @param  \App\Models\Label  $label
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Label $label)
+    public function destroy(Request $request, $user_name, $id)
     {
-        //
+        $label = Label::find($id);
+        if (!is_null($label)){
+            $label->delete();
+            return response()->json(["msg" => "deleted"], 200);
+        }else {
+        return response()->json(["msg" => "label id not found"], 200);
+        }
     }
 
     public function user()
