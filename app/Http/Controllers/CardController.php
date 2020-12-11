@@ -13,6 +13,7 @@ class CardController extends Controller
         'title' => ['required'],
         'description' => ['nullable'],
         'due' => ['nullable'],
+        'label_name' => ['exists:labels,name'],
         'with_star' => ['nullable', 'boolean'],
         'category_id' =>['required', 'integer'],
         'is_repetitive' => ['bool', 'nullable'],
@@ -76,7 +77,16 @@ private static $update_validation_rules = [
     // create an object from Card Model, is used by store() method
     public function create($request, $user_name, $due, $repetitive_id){
         $valid_data = $request->validate(self::$store_validation_rules);
-        
+        $lable_name = null;
+        if(!is_null($valid_data['label_name'])) {
+            $lable = Label::firstWhere(['name' => $request->input("lable_name"),
+                    'user_id' => $this->get_user_id($user_name)]);
+            if (!is_null($lable))
+                $lable_name = $valid_data['label_name'];
+            else
+                return response()->json(["msg" => "invalid lablel"], 404);
+        }
+
         $card = new Card([
             'title' => $valid_data['title'],
             'description' => $valid_data['description'],
@@ -85,6 +95,7 @@ private static $update_validation_rules = [
             'category_id' => $valid_data['category_id'],
             'is_done' => $this->set_default_to_is_done($request),
             'user_id' => $this->get_user_id($user_name),
+            'label_name' => $lable_name,
             'repetitive_id' => $repetitive_id
         ]);
         //$card['repetitive_id'] = $repetitive_id;

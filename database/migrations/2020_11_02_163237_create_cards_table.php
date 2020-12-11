@@ -22,6 +22,7 @@ class CreateCardsTable extends Migration
             $table->text('description')->nullable();
             $table->timestamp('due')->nullable();
             $table->boolean('with_star')->defualt(0);
+            $table->string('label_name', 20);
             $table->timestamps();
             $table->integer('category_id');
             //$table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
