@@ -43,5 +43,5 @@ Route::get("users/{user_name}/weekboard", [CardController::class, 'weekboard'])-
 
 //labels
 Route::post("users/{user_name}/labels", [LabelController::class, 'store'])->middleware('api');
-Route::get("users/{user_name}/labels/", [LabelController::class, 'index'])->middleware('api');
+Route::get("users/{user_name}/labels", [LabelController::class, 'index'])->middleware('api');
 Route::delete("users/{user_name}/labels/{id}", [LabelController::class, 'destroy'])->middleware('api');
