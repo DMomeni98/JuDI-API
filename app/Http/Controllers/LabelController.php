@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Label;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 
 class LabelController extends Controller
@@ -28,13 +29,15 @@ class LabelController extends Controller
     {
         $user = User::where("user_name", $user_name)->first();
         if (!is_null($user)){
-            $labels = Label::where("user_id", $user["id"])->get();
-
-         return response()->json($labels, 200);
+            $labels = Label::select('id', 'name')->where("user_id", $user["id"])->get();
+            if(count($labels) == 0)
+                DB::insert('insert into labels (id, user_id, name) values (?, ?, ?)', [1, $user['id'], 'None']);
+            
+        
+            return response()->json($labels, 200);
             
         } else {
          return response()->json(["msg" => "user not found"], 404);
-
         }
     }
 

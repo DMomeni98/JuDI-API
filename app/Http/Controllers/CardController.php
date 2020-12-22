@@ -14,7 +14,7 @@ class CardController extends Controller
         'title' => ['required'],
         'description' => ['nullable'],
         'due' => ['nullable'],
-        'label_name' => ['exists:labels,name', 'nullable'],
+        'label' => ['exists:labels,name', 'nullable'],
         'with_star' => ['nullable', 'boolean'],
         'category_id' =>['required', 'integer'],
         'is_repetitive' => ['bool', 'nullable'],
@@ -79,11 +79,11 @@ private static $update_validation_rules = [
     public function create($request, $user_name, $due, $repetitive_id){
         $valid_data = $request->validate(self::$store_validation_rules);
         $label_name = null;
-        if(!is_null($valid_data['label_name'])) {
-            $label = Label::firstWhere(['name' => $request->input("label_name"),
+        if(!is_null($valid_data['label'])) {
+            $label = Label::firstWhere(['name' => $request->input("label"),
                     'user_id' => $this->get_user_id($user_name)]);
             if (!is_null($label))
-                $label_name = $valid_data['label_name'];
+                $label_name = $valid_data['label'];
             else
                 return response()->json(["msg" => "invalid label"], 404);
         }
@@ -197,6 +197,7 @@ private static $update_validation_rules = [
             else
                 $card['is_repetitive'] = true;
         }
+        
         $response = [
             'msg' => 'Cards found',
             'cards' => $cards
