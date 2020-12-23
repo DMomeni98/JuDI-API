@@ -81,7 +81,7 @@ private static $update_validation_rules = [
         $label_name = null;
         if(!is_null($valid_data['label'])) {
             $label = Label::firstWhere(['name' => $request->input("label"),
-                    'user_id' => $this->get_user_id($user_name)]);
+            'user_id' => $this->get_user_id($user_name)]);
             if (!is_null($label))
                 $label_name = $valid_data['label'];
             else
@@ -103,8 +103,11 @@ private static $update_validation_rules = [
         
         $response_code = 0;
         if($card->save()){
+            $user = User::find($this->get_user_id($user_name));
+            $user->xp = $user->xp + 1;
+            $user->save();
             $response = [
-                'msg' => 'Card Created',
+                'msg' => $user,
                 'card' => $card
             ];
             $response_code = 201;
@@ -252,6 +255,12 @@ private static $update_validation_rules = [
             return response()->json("user didnt match", 401);
         $card = Card::where('id', $card_id)->first();
         $card['is_done'] = $request->validate(self::$update_validation_rules)['is_done'];
+
+        if ($card['is_done']){
+            $user = User::find($this->get_user_id($user_name));
+            $user->xp = $user->xp + 10;
+            $user->save();
+        }
         $card['due'] = $request->validate(self::$update_validation_rules)['due'];
         $card->save();
         if($card['repetitive_id'] == 0){
