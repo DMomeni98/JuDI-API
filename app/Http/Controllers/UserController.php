@@ -100,8 +100,10 @@ class UserController extends Controller
             if (file_exists($avatar.".jpeg")){
                 $user += ["avatar" => asset(self::$avatars_path."user_id_1.jpeg")];
             }
-            if (file_exists($avatar.".png")){
+             elseif (file_exists($avatar.".png")){
                 $user += ["avatar" => asset(self::$avatars_path."user_id_1.png")];
+            } else {
+                $user += ["avatar" => null];
             }
             $response = [
             'msg' => "operation successful", 
@@ -319,7 +321,6 @@ class UserController extends Controller
         }
         return $token;
     }
-
-
+    
 
 }
