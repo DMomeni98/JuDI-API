@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LabelController;
+use App\Http\Controllers\MonthboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,3 +47,8 @@ Route::get("users/{user_name}/weekboard", [CardController::class, 'weekboard'])-
 Route::post("users/{user_name}/labels", [LabelController::class, 'store'])->middleware('api');
 Route::get("users/{user_name}/labels", [LabelController::class, 'index'])->middleware('api');
 Route::delete("users/{user_name}/labels/{id}", [LabelController::class, 'destroy'])->middleware('api');
+
+//monthboard
+Route::put("users/{user_name}/monthboard/update", [MonthboardController::class, 'update'])->middleware('api');
+Route::get("users/{user_name}/monthboard", [MonthboardController::class, 'show'])->middleware('api');
+Route::delete("users/{user_name}/monthboard/delete", [MonthboardController::class, 'delete'])->middleware('api');
