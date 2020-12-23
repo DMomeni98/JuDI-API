@@ -107,7 +107,7 @@ private static $update_validation_rules = [
             $user->xp = $user->xp + 1;
             $user->save();
             $response = [
-                'msg' => $user,
+                'msg' => 'card created',
                 'card' => $card
             ];
             $response_code = 201;
