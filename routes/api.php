@@ -31,6 +31,7 @@ Route::post("users/{user_name}/upload_avatar", [UserController::class, 'upload_a
 Route::post("users/{user_name}/delete_avatar", [UserController::class, 'delete_avatar'])->middleware('api');
 Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
 Route::get("users/{user_name}", [UserController::class, 'index'])->middleware('api');
+Route::post("users/ranking", [UserController::class, 'ranking'])->middleware('api');
 Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');
 Route::post("users/refresh", [UserController::class, 'refresh'])->middleware('api');
 

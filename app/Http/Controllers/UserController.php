@@ -28,7 +28,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['store','signin']]);
+        $this->middleware('auth:api', ['except' => ['store','signin', 'ranking']]);
     }
    
     public function store(Request $request){
@@ -98,10 +98,10 @@ class UserController extends Controller
             $avatar = public_path() . self::$avatars_path . "user_id_" . $this->me()->original->id;
 
             if (file_exists($avatar.".jpeg")){
-                $user += ["avatar" => asset(self::$avatars_path."user_id_1.jpeg")];
+                $user += ["avatar" => asset(self::$avatars_path. "user_id_".$this->me()->original->id.".jpeg")];
             }
              elseif (file_exists($avatar.".png")){
-                $user += ["avatar" => asset(self::$avatars_path."user_id_1.png")];
+                $user += ["avatar" => asset(self::$avatars_path. "user_id_".$this->me()->original->id.".png")];
             } else {
                 $user += ["avatar" => null];
             }
@@ -293,6 +293,26 @@ class UserController extends Controller
 
     }
     
+
+    public function ranking(){
+        $users = User::orderBy('xp', 'Desc')->take(100)->get();
+        $rank = 1;
+        foreach ($users as $user) {
+            $avatar = public_path() . self::$avatars_path . "user_id_" .$user->id;
+            if (file_exists($avatar.".jpeg")){
+                $user["avatar"] = "1";
+                $user['avatar'] = asset(self::$avatars_path. "user_id_".$user->id.".jpeg");
+            } elseif (file_exists($avatar.".png")){
+                $user['avatar'] = asset(self::$avatars_path. "user_id_".$user->id.".png");
+            } else {
+                $user['avatar'] = null;
+            }
+            $user['rank'] = $rank;
+            
+            $rank++;
+        }
+        return response()->json([$users], 200);
+    }
     
     /**
      * Get the token array structure.
