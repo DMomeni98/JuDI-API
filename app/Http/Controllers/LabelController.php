@@ -32,7 +32,10 @@ class LabelController extends Controller
             $labels = Label::select('id', 'name')->where("user_id", $user["id"])->get();
             if(count($labels) == 0){
                 $last = Label::all()->last();
-                DB::insert('insert into labels (id, user_id, name) values (?, ?, ?)', [$last['id']+1, $user['id'], 'None']);
+                if($last == NULL)
+                    DB::insert('insert into labels (id, user_id, name) values (?, ?, ?)', [1, $user['id'], 'None']);
+                else
+                    DB::insert('insert into labels (id, user_id, name) values (?, ?, ?)', [$last['id']+1, $user['id'], 'None']);
             }
             $labels = Label::select('id', 'name')->where("user_id", $user["id"])->get();
             

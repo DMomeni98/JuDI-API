@@ -26,7 +26,7 @@ class CardTest extends TestCase
             ]);
 
         $response = $this->withHeaders(self::$headers)->
-        json('POST', '/api/users/homa/cards',
+        json('POST', 'api/users/homa/cards',
             ['title' => 'sport',
              "description" => "12345678",
              "due" => "2020-11-17T16:40",
@@ -34,11 +34,11 @@ class CardTest extends TestCase
              "category_id" =>"5",
              "is_done" => true,
              "is_repetetive" => false,
-             "label_name" => "hello"
+             "label" => "None"
             ]);
         
-        $card = $response->original['card'];  
-        $id = $card['id']; 
+        //$card = $response->original['card'];  
+        //$id = $card['id']; 
             
         $response
             ->assertStatus(201)
@@ -64,7 +64,7 @@ class CardTest extends TestCase
              "is_done" => true,
              "is_repetitive" => true,
              "repeat_days" => ["2020-2-2", "2020-2-4"],
-             "label_name" => "hello"
+             "label" => "None"
             ]);
              
         $response
