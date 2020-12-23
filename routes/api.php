@@ -27,6 +27,7 @@ Route::post("users", [UserController::class, 'store']);
 Route::put("users/{user_name}", [UserController::class, 'update_profile'])->middleware('api');
 Route::put("users/{user_name}/change_password", [UserController::class, 'change_password'])->middleware('api');
 Route::post("users/{user_name}/upload_avatar", [UserController::class, 'upload_avatar'])->middleware('api');
+Route::post("users/{user_name}/delete_avatar", [UserController::class, 'delete_avatar'])->middleware('api');
 Route::post("users/signout", [UserController::class, 'signout'])->middleware('api');
 Route::get("users/{user_name}", [UserController::class, 'index'])->middleware('api');
 Route::post("users/signin", [UserController::class, 'signin'])->middleware('api');

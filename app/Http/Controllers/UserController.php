@@ -264,7 +264,32 @@ class UserController extends Controller
         // return response()->json(["url" =>  public_path()], 200);
     }
 
+    public function delete_avatar(Request $request, $user_name){
 
+        if(!$this->match_request_with_user($user_name)){
+            return response()->json(["msg" => "invalid user name"], 404);
+        } else {
+            $user = json_decode($this->me()->original, true);
+            $avatar = "public/uploads/avatars/user_id_" . $this->me()->original->id;
+            $response = [
+                'msg' => "operation successful", 
+                ];
+            $response_code = 200;
+            if (Storage::exists($avatar.".jpeg")){
+                Storage::delete($avatar .".jpeg");
+            }
+            elseif (file_exists($avatar.".png")){
+                Storage::delete($avatar .".png");
+            } else {
+                $response = [
+                    'msg' => "operation failed", 
+                    ];
+                $response_code = 400;
+            }
+        }
+        return response()->json([$response], $response_code);
+
+    }
     
     
     /**
