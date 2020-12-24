@@ -42,7 +42,7 @@ Route::get("users/{user_name}/cards/get/{due}", [CardController::class, 'show_on
 Route::get("users/{user_name}/cards/{id}", [CardController::class, 'show_one_card'])->middleware('api');
 Route::delete("users/{user_name}/cards/remove/{id}", [CardController::class, 'destroy'])->middleware('api');
 Route::put("users/{user_name}/cards/update/{id}", [CardController::class, 'update_root'])->middleware('api');
-Route::get("users/{user_name}/weekboard", [CardController::class, 'weekboard'])->middleware('api');
+Route::post("users/{user_name}/weekboard", [CardController::class, 'weekboard'])->middleware('api');
 
 //labels
 Route::post("users/{user_name}/labels", [LabelController::class, 'store'])->middleware('api');
@@ -50,6 +50,6 @@ Route::get("users/{user_name}/labels", [LabelController::class, 'index'])->middl
 Route::delete("users/{user_name}/labels/{id}", [LabelController::class, 'destroy'])->middleware('api');
 
 //monthboard
-Route::put("users/{user_name}/monthboard/update", [MonthboardController::class, 'update'])->middleware('api');
+Route::post("users/{user_name}/monthboard/update", [MonthboardController::class, 'update'])->middleware('api');
 Route::get("users/{user_name}/monthboard", [MonthboardController::class, 'show'])->middleware('api');
 Route::delete("users/{user_name}/monthboard/delete", [MonthboardController::class, 'delete'])->middleware('api');

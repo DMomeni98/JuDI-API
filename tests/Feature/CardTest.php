@@ -43,7 +43,7 @@ class CardTest extends TestCase
         $response
             ->assertStatus(201)
             ->assertJson([
-                'msg' => 'Card Created'
+                'msg' => 'card created'
             ]);
     }
 
