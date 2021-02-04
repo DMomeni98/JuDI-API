@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MonthboardController;
+use App\Http\Controllers\EmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,3 +54,6 @@ Route::delete("users/{user_name}/labels/{id}", [LabelController::class, 'destroy
 Route::post("users/{user_name}/monthboard/update", [MonthboardController::class, 'update'])->middleware('api');
 Route::get("users/{user_name}/monthboard", [MonthboardController::class, 'show'])->middleware('api');
 Route::delete("users/{user_name}/monthboard/delete", [MonthboardController::class, 'delete'])->middleware('api');
+
+// send email
+Route::get("users/{user_name}/sendemail", [EmailController::class, 'store'])->middleware('api');

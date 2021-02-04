@@ -11,9 +11,16 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Card;
 
 
+
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
+
+    //public function routeNotificationForMail($notification)
+    //{
+      //  return $this->email;
+    //}
+
 
     /**
      * The attributes that are mass assignable.
