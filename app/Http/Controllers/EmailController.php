@@ -1,26 +1,22 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Notifications\Notifiable;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Notifications\TaskReminder;
+use App\Mail\sendingEmail;
 
 class EmailController extends Controller
 {
-    public function store(Request $request, $user_name){
-        //$order = User::findOrFail($request->order_id);
+    static function send($mailto, $name, $message)
+    {
 
-        // Ship the order...
-        $user = User::where('user_name', $user_name);
-        //$user->name = 'homa';
-        $user->email = 'homasemsarha@yahoo.com';
-        //Mail::to($user)->send(new TaskReminder());
-        Notification::route('mail' , $user->email) //Sending mail to subscriber
-                          ->notify(new TaskReminder()); //With new post
- 
-        return redirect()->back();
+        $data = array(
+            'name' =>$name,
+            'message' => $message
+        );
+
+        Mail::to($mailto)->send(new sendingEmail($data));
+        return true;
+        // return back()->with('success', 'Thanks for contacting us!');
     }
 }

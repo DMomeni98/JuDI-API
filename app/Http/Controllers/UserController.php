@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\sendingEmail;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 // use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\EmailController;
 
 class UserController extends Controller
 {
@@ -57,6 +59,7 @@ class UserController extends Controller
                 'user' => $user
             ];
             $response_code = 201;
+            EmailController::send('dadfar.momeni@gmail.com', "Dadfar", "hello");
         } else {
             $response = ['msg' => 'an error occured while creating user'];
             $response_code = 404;
