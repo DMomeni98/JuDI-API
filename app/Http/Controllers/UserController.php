@@ -2,23 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\sendingEmail;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 // use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\EmailController;
 
 class UserController extends Controller
 {
     private static $store_validation_rules = [
         'email' => ['required', 'email', 'unique:users'],
-        'user_name' => ['min:3', 'max:20', 'alpha_dash', 'unique:users'],
+        'user_name' => ['nullable', 'min:3', 'max:20', 'alpha_dash', 'unique:users'],
         'password' => ['required', 'min:8', 'confirmed']];
 
     private static $signin_validation_rules = [
-        'email' => ['required', 'email'],
+        'user_name' => ['required'],
         'password' => 'required'
     ];
    
+    private static $avatars_path = "/storage/uploads/avatars/";
     /**
      * Create a new AuthController instance.
      *
@@ -26,7 +30,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['store','signin']]);
+        $this->middleware('auth:api', ['except' => ['store','signin', 'ranking']]);
     }
    
     public function store(Request $request){
@@ -49,12 +53,13 @@ class UserController extends Controller
                 'href' => parent::$base_route . 'users/sigin',
                 'method' => 'POST',
                 'params' => ['email', 'password']
-            ];;
+            ];
             $response = [
                 'msg' => 'User Created',
                 'user' => $user
             ];
             $response_code = 201;
+            EmailController::send('dadfar.momeni@gmail.com', "Dadfar", "hello");
         } else {
             $response = ['msg' => 'an error occured while creating user'];
             $response_code = 404;
@@ -65,7 +70,7 @@ class UserController extends Controller
 
     public function signin(Request $request){
         $valid_data = $request->validate(self::$signin_validation_rules);
-        $credentials = request(['email', 'password']);
+        $credentials = request(['user_name', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -92,9 +97,20 @@ class UserController extends Controller
             'user_name' => 'required|exists:users',
         ])->validate();
         if ($this->match_request_with_user($user_name)){
+            $user = json_decode($this->me()->original, true);
+            $avatar = public_path() . self::$avatars_path . "user_id_" . $this->me()->original->id;
+
+            if (file_exists($avatar.".jpeg")){
+                $user += ["avatar" => asset(self::$avatars_path. "user_id_".$this->me()->original->id.".jpeg")];
+            }
+             elseif (file_exists($avatar.".png")){
+                $user += ["avatar" => asset(self::$avatars_path. "user_id_".$this->me()->original->id.".png")];
+            } else {
+                $user += ["avatar" => null];
+            }
             $response = [
             'msg' => "operation successful", 
-            'user' => $this->me()
+            'user' => $user
             ];
             $response_code = 200;
         }
@@ -148,19 +164,44 @@ class UserController extends Controller
         ])->validate();
 
         if ($this->match_request_with_user($user_name)){
-            $request->validate(['user_name' => ['min:3', 'max:20', 'alpha_dash', 'required'],
-                'full_name' => ['nullable', 'max:70', 'regex:/^[\pL\s\-]+$/u', 'required']
+
+            $request->validate(['user_name' => ['min:3', 'max:20', 'alpha_dash', 'nullable'],
+                'full_name' => ['nullable', 'max:70', 'regex:/^[\pL\s\-]+$/u', 'nullable']
             ]);
-            $full_name = $request->input('full_name');
-            $new_user_name = $request->input('user_name');
-            $user_exists = User::where("user_name", $new_user_name)->first();
+            
             $curr_user = User::where("user_name", $user_name)->first();
-            if(is_null($user_exists)){
-                $curr_user->user_name = $new_user_name;
-            } elseif(!is_null($user_exists) && $user_exists->user_name != $user_name){
+            //get new information from request
+            $new_full_name = $request->input('full_name');
+            $new_user_name = $request->input('user_name');
+            $new_email = $request->input('email');
+            //$new_password = $request->input('password');
+            
+            // search databese for new_email and new_user_name
+            $token_user_name = User::where("user_name", $new_user_name)->first();
+            $token_email = User::where("email", $new_email)->first();
+
+            // taken username
+            if(is_null($token_user_name)){
+                if(!is_null($new_user_name))
+                    $curr_user->user_name = $new_user_name;
+            } elseif(!is_null($token_user_name) && $token_user_name->user_name != $user_name){
                 $response['error'] = 'sorry, this username is taken.';
+                return response()->json($response, 401);
             }
-            $curr_user->full_name = $full_name;
+
+            // taken email
+            if(is_null($token_email)){
+                if(! is_null($new_email))
+                    $curr_user->email = $new_email;
+            } elseif(!is_null($token_email) && $token_email->user_name != $user_name){
+                $response['error'] = 'sorry, this email is taken.';
+                return response()->json($response, 401);
+            }
+
+            if(! is_null($new_full_name))
+                $curr_user->full_name = $new_full_name;
+            //if(! is_null($new_password))
+                //$curr_user->password = bcrypt($new_password);
             $curr_user->save();
 
             $response['msg'] = 'user updated';
@@ -178,32 +219,23 @@ class UserController extends Controller
     }
 
 
-    public function upload_avatar(Request $request ,$user_name){
-        if(!$this->match_request_with_user($user_name)){
-            return response()->json(["msg" => "not"], 404);
-        }
-        
-    if(!$request->hasFile('photo')) {
-        return response()->json([$request->all()], 400);
-    }
-    $file = $request->file('photo');
-    if(!$file->isValid()) {
-        return response()->json(['invalid_file_upload'], 400);
-    }
-    $path = public_path() . '/uploads/images/avatars/';
-    $file->move($path, $file->getClientOriginalName());
-    return response()->json(compact('path'));
-}
-
-
     public function change_password(Request $request, $user_name)
     {
         if($this->match_request_with_user($user_name)){
             $validated = $request->validate(
-                ['password' => ['required', 'min:8', 'string', 'confirmed']
+                ['new_password' => ['required', 'min:8', 'string', 'confirmed']
                 ]);
             $user = User::where('user_name', $user_name)->first();
-            $user->password = bcrypt($validated['password']);
+            
+            // check old password
+            if(! password_verify($request->input('old_password'), $user['password'])){
+                $response = [
+                    'msg' => "old password is not correct"
+                    ];
+                    $response_code = 404;
+                    return response()->json($response, $response_code);
+            }
+            $user->password = bcrypt($validated['new_password']);
             $user->save();
             return $this->signout("password changed successfuly, please sign in again");
         }
@@ -214,6 +246,75 @@ class UserController extends Controller
             $response_code = 404;
             return response()->json($response, $response_code);
         }
+    }
+
+
+    public function upload_avatar(Request $request ,$user_name){
+        if(!$this->match_request_with_user($user_name)){
+            return response()->json(["msg" => "invalid user name"], 404);
+        }
+
+        if(!$request->hasFile('avatar')) {
+            return response()->json(["msg" => "no file"], 400);
+        }
+        if(!$request->file('avatar')->isValid()) {
+            return response()->json(['invalid_file_upload'], 400);
+        }
+        $request->validate(['avatar' => 'mimes:jpeg,png|max:1024']);
+        
+        $path = public_path() . self::$avatars_path;
+        $file_name = "user_id_" . $this->me()->original->id . "." .$request->file('avatar')->extension();
+        $request->file('avatar')->move($path, $file_name);
+        return response()->json(["url" =>  asset(self::$avatars_path.$file_name)], 200);
+        // return response()->json(["url" =>  public_path()], 200);
+    }
+
+    public function delete_avatar(Request $request, $user_name){
+
+        if(!$this->match_request_with_user($user_name)){
+            return response()->json(["msg" => "invalid user name"], 404);
+        } else {
+            $user = json_decode($this->me()->original, true);
+            $avatar = "public/uploads/avatars/user_id_" . $this->me()->original->id;
+            $response = [
+                'msg' => "operation successful", 
+                ];
+            $response_code = 200;
+            if (Storage::exists($avatar.".jpeg")){
+                Storage::delete($avatar .".jpeg");
+            }
+            elseif (file_exists($avatar.".png")){
+                Storage::delete($avatar .".png");
+            } else {
+                $response = [
+                    'msg' => "operation failed", 
+                    ];
+                $response_code = 400;
+            }
+        }
+        return response()->json([$response], $response_code);
+
+    }
+    
+
+    public function ranking(){
+        $users = User::orderBy('xp', 'Desc')->take(100)->get();
+        $rank = 1;
+        foreach ($users as $user) {
+            $avatar = public_path() . self::$avatars_path . "user_id_" .$user->id;
+            if (file_exists($avatar.".jpeg")){
+                $user["avatar"] = "1";
+                $user['avatar'] = asset(self::$avatars_path. "user_id_".$user->id.".jpeg");
+            } elseif (file_exists($avatar.".png")){
+                $user['avatar'] = asset(self::$avatars_path. "user_id_".$user->id.".png");
+            } else {
+                $user['avatar'] = null;
+            }
+            $user['rank'] = $rank;
+            
+            $rank++;
+        }
+        return response()->json([$users], 200);
     }
     
     /**
@@ -243,7 +344,6 @@ class UserController extends Controller
         }
         return $token;
     }
-
-
+    
 
 }

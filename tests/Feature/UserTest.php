@@ -47,8 +47,9 @@ class UserTest extends TestCase
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users',
             ['user_name' => 'hello',
+             "password_confirmation" => "12345678",
              'password' => '12345678',
-             'email' => 'test@test.com'
+             'email' => 'homa@test.com'
             ]);
              
 
@@ -67,8 +68,9 @@ class UserTest extends TestCase
             'Content-Type' => 'application/json',
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users',
-            ['user_name' => 'hello',
+            ['user_name' => 'homa',
              'password' => '12345678',
+             "password_confirmation" => "12345678",
              'email' => 'test@test.com'
             ]);
              
@@ -90,6 +92,7 @@ class UserTest extends TestCase
          ])->json('POST', '/api/users',
              ['user_name' => '',
               'password' => '12345678',
+              "password_confirmation" => "12345678",
               'email' => 'test101@test.com'
              ]);
               
@@ -111,6 +114,7 @@ class UserTest extends TestCase
         ])->json('POST', '/api/users',
             ['user_name' => 'homa',
              'password' => '12345678',
+             "password_confirmation" => "12345678",
              'email' => ''
             ]);
              
@@ -132,6 +136,7 @@ class UserTest extends TestCase
         ])->json('POST', '/api/users',
             ['user_name' => 'homa',
              'password' => '',
+             "password_confirmation" => "",
              'email' => 'test10@test.com'
             ]);
              
@@ -153,7 +158,7 @@ class UserTest extends TestCase
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users/signin',
             ['password' => '12345678',
-             'email' => 'homa@test.com'
+             'user_name' => 'homa'
             ]);
              
 
@@ -162,7 +167,7 @@ class UserTest extends TestCase
     }
 
 
-    //sign in with wrong email and password
+    //sign in with wrong user name and password
     public function testInvalidSignIn()
     {
         $response = $this->withHeaders([
@@ -170,7 +175,7 @@ class UserTest extends TestCase
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users/signin',
             ['password' => '12345678',
-             'email' => 'homad@test.com'
+             'user_name' => 'homad'
             ]);
              
 
@@ -179,7 +184,7 @@ class UserTest extends TestCase
     }
 
 
-    //sign in with null email
+    //sign in with null user name
     public function testSignInNullEmail()
     {
         $response = $this->withHeaders([
@@ -187,7 +192,7 @@ class UserTest extends TestCase
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users/signin',
             ['password' => '12345678',
-             'email' => ''
+             'user_name' => ''
             ]);
              
 
@@ -203,11 +208,52 @@ class UserTest extends TestCase
             'X-Requested-With' => 'XMLHttpRequest'
         ])->json('POST', '/api/users/signin',
             ['password' => '',
-             'email' => 'homa@test.com'
+             'user_name' => 'homa'
             ]);
              
 
         $response
             ->assertStatus(422);
     }
+
+
+    // change password, correct old password
+    public function testChangePassword(){
+        $response = $this->withHeaders(self::$headers)
+        ->json('POST', '/api/users/signin',
+            ['password' => '12345678',
+             'user_name' => 'homa'
+            ]);
+
+        $response = $this->withHeaders(self::$headers)->
+        json('PUT', '/api/users/homa/change_password',
+            ["old_password" => "12345678",
+             "new_password" => "12345678",
+             "new_password_confirmation" => "12345678"
+            ]);
+    
+        $response
+            ->assertStatus(200);
+    }
+
+
+    // change password, wrong old password
+    public function testChangePasswordWrong(){
+        $response = $this->withHeaders(self::$headers)
+        ->json('POST', '/api/users/signin',
+            ['password' => '12345678',
+             'user_name' => 'homa'
+            ]);
+
+        $response = $this->withHeaders(self::$headers)->
+        json('PUT', '/api/users/homa/change_password',
+            ["old_password" => "123456789",
+             "new_password" => "123456789",
+             "new_password_confirmation" => "123456789"
+            ]);
+    
+        $response
+            ->assertStatus(404);
+    }
+
 }

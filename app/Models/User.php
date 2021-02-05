@@ -7,20 +7,20 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use App\Models\Card;
 
-// use Illuminate\Support\Facades\DB;
 
 
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
-    // public function __construct(array $input){
-    //     $this->fillable['email'] = $input['email'];
-    //     $this->fillable['password'] = bcrypt($input['password']);
-    //     $this->fillable['user_name'] = !is_null($input['user_name']) ?
-    //         $input['user_name'] : $this->token_generator(); 
-    // }
+    //public function routeNotificationForMail($notification)
+    //{
+      //  return $this->email;
+    //}
+
 
     /**
      * The attributes that are mass assignable.
@@ -29,7 +29,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'user_name',
-        'full_name',
+        'fullname',
         'email',
         'password',
         'avatar',
@@ -46,19 +46,33 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
         'id',
         'updated_at',
-        'created_at',
+        'created_at'
     ];
 
     /**
      * The attributes that should be cast to native types.
-     *
+
      * @var array
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
-     /**
+    public static function getAll()
+    {
+        return DB::select("select * from `users`;");
+    }
+
+    public function cards(){
+        return $this->belongsToMany('App\Models\Card');
+    }
+
+    public function labels(){
+        return $this->belongsToMany('App\Models\Label');
+    }
+    // Rest omitted for brevity
+
+    /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
      * @return mixed
@@ -77,5 +91,4 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-
 }

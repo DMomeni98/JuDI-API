@@ -6,26 +6,29 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Card extends Model
+class Label extends Model
 {
     use HasFactory;
 
+    protected $table = 'labels';
+    
     protected $fillable = [
-        'title',
-        'description',
-        'due',
-        'category_id',
-        'with_star',
-        'is_done',
-        'user_id',
-        'repetitive_id',
-        'label_name'
+        'name',
+        'user_id'
     ];
+
+    protected $hidden = [
+        'updated_at',
+        'created_at'
+    ];
+
     public function user(){
         return $this->belongsTo('App\Models\User');
     }
+
+
     public static function get_all()
     {
-        return DB::select("select * from `cards`;");
+        return DB::select("select * from `labels`;");
     }
 }

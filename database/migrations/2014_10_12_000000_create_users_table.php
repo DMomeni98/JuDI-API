@@ -18,12 +18,12 @@ class CreateUsersTable extends Migration
             $table->string('user_name', 20)->unique();
             $table->string('full_name', 70)->nullable();
             $table->string('email')->unique();
+            $table->bigInteger('xp')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
-            $table->string('avatar')->nullable();
-            $table->integer('xp')->default(0);
+            // $table->string('avatar')->nullable();
         });
     }
 
@@ -34,6 +34,7 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
+        //Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('users');
     }
 }
